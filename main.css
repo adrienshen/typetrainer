@@ -37,12 +37,9 @@ div#app-controls {
 }
 
 input#type-input {
-    
     height:40px; width:99%;
-    outline:green;
-    
+    outline:green;    
     font-size:30px;
-    
     margin-bottom:10px;
 }
 
@@ -58,4 +55,8 @@ span#missed {
 }
 span#level {
     color:#009;
+}
+
+.grey-text {
+    color: #909090;
 }
