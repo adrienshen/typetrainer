@@ -48,7 +48,8 @@ $(document).ready(function() {
     init();
 });
 
-var refreshAll = function() {
+var refreshResetAll = function() {
+    gameStarted = false;
     hits = 0, missed = 0, GAME_LEVEL= 0;
     canvas = canvas;
     phrasesArr = [];
@@ -60,8 +61,8 @@ function init() {
     $(document).on('keyup', function(e) {
 
         userTypedValue = $('#type-input').val();
-
         utv = parseInt(userTypedValue)
+
         var allowedKeys = [1, 2, 3, 9];
         if (!gameStarted) {
             if (allowedKeys.indexOf(utv) === -1) {
@@ -117,6 +118,12 @@ function init() {
                 startPhrases();
             }
 
+        } else if (utv == 0) {
+            refreshResetAll()
+            userInput.val("");
+            return 0
+        } else {
+            return 0
         }
     });    
 }
