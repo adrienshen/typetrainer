@@ -8,7 +8,8 @@ var phrasesArr;
 var canvas = document.getElementById('app-view'),
     ctx = canvas.getContext('2d');
 
-var fps = 30;
+var gameStarted = false;
+var FPS = 30;
     
 var hits = 0,
     missed = 0,
@@ -16,7 +17,7 @@ var hits = 0,
 // Configs for game difficulty
 // Actually these are not constants so should not be ALL_CAPS
 GAME_LEVEL = 1,
-GROWTH_SPEED = (GAME_LEVEL * 0.5 / fps),    // Controls the speed at which the phrases grow to 50px/60px at 30fps
+GROWTH_SPEED = (GAME_LEVEL * 0.5 / FPS),    // Controls the speed at which the phrases grow to 50px/60px at 30FPS
 SNIPER_DECREASE_STARTING_SPEED = .15,       // Font descrease in sniper until disapear
 PHRASE_LIMIT = 2,                           // Number of phrases on screen at once
 PHRASE_LEN_MIN = 5;
@@ -56,9 +57,25 @@ var refreshAll = function() {
 }
 
 function init() {
-    $(document).on('keyup', function(key) {
-        $('div#model').fadeOut(1200);
+    $(document).on('keyup', function(e) {
+
         userTypedValue = $('#type-input').val();
+
+        utv = parseInt(userTypedValue)
+        var allowedKeys = [1, 2, 3, 9];
+        if (!gameStarted) {
+            if (allowedKeys.indexOf(utv) === -1) {
+                userInput.val("");
+                $modeNums = document.querySelectorAll('.mode-nums')
+                $modeNums.forEach(function(item){
+                    item.style.background = "lightgreen"
+                })
+                return 0
+            }
+        }
+
+        gameStarted = true;
+        $('div#model').fadeOut(1200);
 
         if (userTypedValue == 1) {
             charSpaceConfig = 1; console.log(charSpaceConfig);
@@ -139,7 +156,7 @@ function matchByType() {
             
             if ( (hits % 10 == 0) && (userTypedValue.trim() === obj.phrase) ) {
                 GAME_LEVEL = GAME_LEVEL + 1;
-                GROWTH_SPEED = (GAME_LEVEL * 0.5/fps);
+                GROWTH_SPEED = (GAME_LEVEL * 0.5/FPS);
                 console.log("speed is "+ GROWTH_SPEED);
 
                 updateStat('level', GAME_LEVEL);
@@ -253,7 +270,7 @@ function drawPhraseUnit() {
         ctx.fillText("you lost", 100, 100);
         
     } else {
-        setTimeout(drawPhraseUnit, 1000 / fps);
+        setTimeout(drawPhraseUnit, 1000 / FPS);
     }
     
 }
