@@ -39,7 +39,9 @@ var allowedMisses = 20;
     
 var userInput = $('#type-input');
 //console.log(charSpaceConfig);
-ctx.fillStyle = '#333' ;
+ctx.fillStyle = '#333';
+
+var userTypedValue;
 
 $(document).ready(function() { 
     init();
@@ -53,69 +55,30 @@ var refreshAll = function() {
     init();
 }
 
-function matchByType() {
-    
-    $('div#model').fadeOut(2000);
-    
-    // Program init
-    //init();
-    userValue = $('#type-input').val();
-    
-    _.each(phrasesArr, function(obj, i) {
-        if ( userValue.trim() === obj.phrase ) {
-            userInput.val("");
-            hits = hits + 1;
-            updateStat('hit', hits);
-            
-            setTimeout(function() {
-                ctx.fillStyle = '#333'
-                phrasesArr[i] = new PhraseUnit();
-                // phrasesArr.push(new PhraseUnit()); //makes two new unit for each one completed, turn on for imposible mode
-            }, TIMEOUT_AFTER_HIT);
-            
-            if ( (hits % 10 == 0) && (userValue.trim() === obj.phrase) ) {
-                GAME_LEVEL = GAME_LEVEL + 1;
-                GROWTH_SPEED = (GAME_LEVEL * 0.5/fps);
-                console.log("speed is "+ GROWTH_SPEED);
-
-                updateStat('level', GAME_LEVEL);
-                //phrasesArr.push(new PhraseUnit()); //makes 1 more after each level up, turn on for insanity mode
-                if ( (GAME_LEVEL % 5 == 0) && (hits % 10 == 0) ) {
-                    // Pushing another PhraseUnit on every 5th level up
-                    phrasesArr.push(new PhraseUnit());
-                }
-            }
-            ctx.fillStyle = '#090'
-            
-        }
-    });
-    return GAME_LEVEL;
-};
-
 function init() {
-    
-    //charSpaceConfig = 3; console.log(charSpaceConfig);
     $(document).on('keyup', function(key) {
-        userValue = $('#type-input').val();
-        if (userValue == 1) {
+        $('div#model').fadeOut(1200);
+        userTypedValue = $('#type-input').val();
+
+        if (userTypedValue == 1) {
             charSpaceConfig = 1; console.log(charSpaceConfig);
             userInput.val("");
             updateStat('mode', '1.only home-row keys')
             startPhrases();
         }
-        else if (userValue == 2) {
+        else if (userTypedValue == 2) {
             charSpaceConfig = 2; console.log(charSpaceConfig);
             userInput.val("");
             updateStat('mode', '2.home-row+top-row')
             startPhrases();
         }
-        else if (userValue == 3) {
+        else if (userTypedValue == 3) {
             charSpaceConfig = 3; console.log(charSpaceConfig);
             userInput.val("");
             updateStat('mode', 'all 3 rows')
             startPhrases();
         }
-        else if (userValue == 9) {
+        else if (userTypedValue == 9) {
             
             if ( snipeModeConfig == 1 ) {
                 snipeModeConfig = 0;
@@ -155,8 +118,43 @@ function startPhrases() {
         phrasesArr.push(new PhraseUnit());
     }
     drawPhraseUnit();
-    userInput.on('keypress', matchByType);
+
+    userInput.on('keyup', matchByType);
 }
+
+function matchByType() {
+    userTypedValue = $('#type-input').val();
+
+    _.each(phrasesArr, function(obj, i) {
+        if (userTypedValue.trim() === obj.phrase) {
+            userInput.val("");
+            hits = hits + 1;
+            updateStat('hit', hits);
+            
+            setTimeout(function() {
+                ctx.fillStyle = '#333'
+                phrasesArr[i] = new PhraseUnit();
+                // phrasesArr.push(new PhraseUnit()); //makes two new unit for each one completed, turn on for imposible mode
+            }, TIMEOUT_AFTER_HIT);
+            
+            if ( (hits % 10 == 0) && (userTypedValue.trim() === obj.phrase) ) {
+                GAME_LEVEL = GAME_LEVEL + 1;
+                GROWTH_SPEED = (GAME_LEVEL * 0.5/fps);
+                console.log("speed is "+ GROWTH_SPEED);
+
+                updateStat('level', GAME_LEVEL);
+                //phrasesArr.push(new PhraseUnit()); //makes 1 more after each level up, turn on for insanity mode
+                if ( (GAME_LEVEL % 5 == 0) && (hits % 10 == 0) ) {
+                    // Pushing another PhraseUnit on every 5th level up
+                    phrasesArr.push(new PhraseUnit());
+                }
+            }
+            ctx.fillStyle = '#090'
+            
+        }
+    });
+    return GAME_LEVEL;
+};
 
 function PhraseUnit() {
     this.xPosition = _.random(100, CANVAS_WIDTH-100);    //_.random(100, CANVAS_WIDTH-150); //setting the x position of PhraseUnit
