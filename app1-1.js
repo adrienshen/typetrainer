@@ -53,7 +53,7 @@ var refreshAll = function() {
     init();
 }
 
-function typeMatch() {
+function matchByType() {
     
     $('div#model').fadeOut(2000);
     
@@ -74,7 +74,7 @@ function typeMatch() {
             }, TIMEOUT_AFTER_HIT);
             
             if ( (hits % 10 == 0) && (userValue.trim() === obj.phrase) ) {
-                GAME_LEVEL ++;
+                GAME_LEVEL = GAME_LEVEL + 1;
                 GROWTH_SPEED = (GAME_LEVEL * 0.5/fps);
                 console.log("speed is "+ GROWTH_SPEED);
 
@@ -89,7 +89,7 @@ function typeMatch() {
             
         }
     });
-    return GAME_LEVEL;    
+    return GAME_LEVEL;
 };
 
 function init() {
@@ -128,40 +128,35 @@ function init() {
             else if ( snipeModeConfig == 0 ) {
                 console.log("mode set to sniper!");
                 charSpaceConfig = 3; //sets to all-keys
-                PHRASE_LEN_MIN = 1; PHRASE_LEN_MAX = 2;
+                PHRASE_LEN_MIN = 1;
+                PHRASE_LEN_MAX = 2;
 
                 snipeModeConfig = 1; console.log(snipeModeConfig);
-
                 userInput.val("");
-
                 updateStat('mode', 'sniper mode')
-
                 startPhrases();
             }
 
         }
-    });
-    
-    userInput.on('keypress', typeMatch);
-    function startPhrasesSnipe() { //experimenting
-        phrasesArr = [];
-        for (var j = 0; j < PHRASE_LIMIT; j++) {
-            phrasesArr.push(new PhraseUnit());
-        }
-        drawPhraseUnitSnipe();
-    }
-
-    function startPhrases() {
-        phrasesArr = [];
-        for (i = 0; i < PHRASE_LIMIT; i++) {
-            phrasesArr.push(new PhraseUnit());
-        }
-        drawPhraseUnit();
-        //userInput.on('keypress', typeMatch);
-    }
-
+    });    
 }
 
+// function startPhrasesSnipe() { //experimenting
+//     phrasesArr = [];
+//     for (var j = 0; j < PHRASE_LIMIT; j++) {
+//         phrasesArr.push(new PhraseUnit());
+//     }
+//     drawPhraseUnitSnipe();
+// }
+
+function startPhrases() {
+    phrasesArr = [];
+    for (i = 0; i < PHRASE_LIMIT; i++) {
+        phrasesArr.push(new PhraseUnit());
+    }
+    drawPhraseUnit();
+    userInput.on('keypress', matchByType);
+}
 
 function PhraseUnit() {
     this.xPosition = _.random(100, CANVAS_WIDTH-100);    //_.random(100, CANVAS_WIDTH-150); //setting the x position of PhraseUnit
@@ -172,6 +167,7 @@ function PhraseUnit() {
 }
         
 function phraseConstructor() {
+    // TODO: use hashmap to choose
     if (charSpaceConfig == 1) {
         optionOne(PHRASE_LEN_MIN, PHRASE_LEN_MAX);
     }
