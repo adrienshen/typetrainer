@@ -232,8 +232,9 @@ function drawPhraseUnit() {
         } else {
             ctx.font = pu.fontSize + 'px Arial'
         }
+
         ctx.fillText(pu.phrase, pu.xPosition, pu.yPosition);
-        
+
         if ( (pu.fontSize > 60) && !(snipeModeConfig == 1) ) {
             missed = missed - 1;
             updateStat('missed', missed);
@@ -249,18 +250,22 @@ function drawPhraseUnit() {
         if (snipeModeConfig === 1) {
             pu.fontSize = pu.fontSize - SNIPER_DECREASE_STARTING_SPEED;
         } else {
-            pu.fontSize += pu.growthSpeed;
+            pu.fontSize = pu.fontSize + pu.growthSpeed;
         }
     });
         
     if ( missed >= allowedMisses ) {
-        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        ctx.fillText("you lost", 100, 100);
-        
+        displayGameOver()
     } else {
-        setTimeout(drawPhraseUnit, 1000 / FPS);
+        // Where the magic happens, main game loop happens at 30Frame/Per second
+        setTimeout(drawPhraseUnit, 1000/FPS)
     }
     
+}
+
+function displayGameOver() {
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.fillText('GAME OVER', 100, 100);
 }
 
 function updateStat(id, newStat) {
