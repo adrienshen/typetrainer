@@ -4,7 +4,7 @@
 */
 
 
-var phrasesArr;
+var phrasesArr = []
 var canvas = document.getElementById('app-view'),
     ctx = canvas.getContext('2d');
 
@@ -19,12 +19,11 @@ var hits = 0,
 GAME_LEVEL = 1,
 GROWTH_SPEED = (GAME_LEVEL * 0.5 / FPS),    // Controls the speed at which the phrases grow to 50px/60px at 30FPS
 SNIPER_DECREASE_STARTING_SPEED = .15,       // Font descrease in sniper until disapear
+SNIPER_MODE_GROWTH_SPEED = 10
 PHRASE_LIMIT = 2,                           // Number of phrases on screen at once
-PHRASE_LEN_MIN = 5;
+PHRASE_LEN_MIN = 5,
 PHRASE_LEN_MAX = 8,
 TIMEOUT_AFTER_HIT = 500;
-            
-phrasesArr = [];
 
 var CANVAS_WIDTH = 1000,
     CANVAS_HEIGHT = 550;
@@ -142,7 +141,6 @@ function startPhrases() {
         phrasesArr.push(new PhraseUnit());
     }
     drawPhraseUnit();
-
     userInput.on('keyup', matchByType);
 }
 
@@ -189,57 +187,40 @@ function PhraseUnit() {
 }
         
 function phraseConstructor() {
-    // TODO: use hashmap to choose
-    if (charSpaceConfig == 1) {
-        optionOne(PHRASE_LEN_MIN, PHRASE_LEN_MAX);
+    var gameChoices = {
+        1: optionHomeKeys(PHRASE_LEN_MIN, PHRASE_LEN_MAX),
+        2: optionHomeTopRowKeys(PHRASE_LEN_MIN, PHRASE_LEN_MAX),
+        3: optionAllKeys(PHRASE_LEN_MIN, PHRASE_LEN_MAX)
     }
-    else if (charSpaceConfig == 2) {
-        optionTwo(PHRASE_LEN_MIN, PHRASE_LEN_MAX);
-    }
-    else {
-        optionThree(PHRASE_LEN_MIN, PHRASE_LEN_MAX);
-    }
-    return cpStr;
+    return gameChoices[charSpaceConfig]
 }
 
-function optionOne(lenMin, lenMax) {
-    // console.log("option1 chosen")
-    var cpArr = homeKeys;                   //list possible chars in array
-    var randInt = _.random(lenMin, lenMax); //gens random int between 5 and 8
-    cpArr = cpArr.concat(cpArr);            //doubles the values in cpArr so double chars are possible
-    cpArr = _.shuffle(cpArr);               //shuffles cpArr using underscore's _.shuffle method
-    cpStr = cpArr.join("");                 //joins the cpArr into a String
-    cpStr = cpStr.substr(0, randInt);       //makes the resulting string 5 - 8 chars long
-    return cpStr; console.log(cpStr);
+function shufflePhrase(arr, min, max) {
+    var randomInt = _.random(min, max)
+    return _.shuffle(arr)
+                .join('')
+                .substr(0, randomInt)
 }
 
-function optionTwo(lenMin, lenMax) {
-    // console.log("option2 chosen")
-    var randInt = _.random(lenMin, lenMax)
-    var cpArrA = homeKeys, cpArrB = topKeys, apArr;
-    cpArrA = cpArrA.concat(cpArrA); cpArrB = cpArrB.concat(cpArrB); 
-    cpArr = cpArrA.concat(cpArrB);
-    cpArr = _.shuffle(cpArr);
-    cpStr = cpArr.join("");
-    cpStr = cpStr.substr(0, randInt);
-    return cpStr;
-
-    //in one expression
-    //final = ((_.shuffle((cpArrA.concat(cpArrA)).concat( (cpArrB.concat(cpArrB)) ))).join("")).substr(0, randInt);  
+function optionHomeKeys(lenMin, lenMax) {
+    var doubleHomeKeys = homeKeys.concat(homeKeys);
+    return shufflePhrase(doubleHomeKeys, lenMin, lenMax)
 }
 
-function optionThree(lenMin, lenMax) {
-    // console.log("option3 chosen")
-    var randInt = _.random(lenMin, lenMax)
-    var cpArrA = homeKeys, cpArrB = topKeys, cpArrC = lowerKeys, cpArr;
-    cpArrA= cpArrA.concat(cpArrA);
-    cpArrB= cpArrB.concat(cpArrB);
-    cpArrC= cpArrC.concat(cpArrC);
-    cpArr = cpArrA.concat( ( cpArrB.concat(cpArrC) ) );
-    cpArr = _.shuffle(cpArr);
-    cpStr = cpArr.join("");
-    cpStr = cpStr.substr(0, randInt);
-    return cpStr;
+function optionHomeTopRowKeys(lenMin, lenMax) {
+    var doubleHomeKeys = homeKeys.concat(homeKeys);
+    var doubleTopKeys = topKeys.concat(topKeys);
+    var combinedDoubleHomeTop = doubleHomeKeys.concat(doubleTopKeys);
+    return shufflePhrase(combinedDoubleHomeTop, lenMin, lenMax)
+}
+
+function optionAllKeys(lenMin, lenMax) {
+    var doubleHomeKeys = homeKeys.concat(homeKeys);
+    var doubleTopKeys = topKeys.concat(topKeys);
+    var doubleLowKeys = lowerKeys.concat(lowerKeys);
+    var combinedAll = doubleHomeKeys.concat(
+        doubleTopKeys.concat(doubleLowKeys))
+    return shufflePhrase(combinedAll, lenMin, lenMax);
 }
 
 function drawPhraseUnit() {
@@ -247,7 +228,7 @@ function drawPhraseUnit() {
     
     _.each(phrasesArr, function(pu, i) {
         if (snipeModeConfig == 1) {
-            ctx.font = pu.fontSize+10 + 'px Arial';
+            ctx.font = pu.fontSize+SNIPER_MODE_GROWTH_SPEED + 'px Arial';
         } else {
             ctx.font = pu.fontSize + 'px Arial'
         }
