@@ -8,6 +8,8 @@ var phrasesArr = []
 var canvas = document.getElementById('app-view'),
     ctx = canvas.getContext('2d');
 
+var DEBUG_CONSOLE = true;
+
 var gameStarted = false;
 var FPS = 30;
     
@@ -33,9 +35,18 @@ var homeKeys = ["a", "s", "d", "f", ";", "l", "k", "j", "g", "h"],
     topKeys = ["q", "w", "e", "r", "p", "o", "i", "u", "t", "y"],
     lowerKeys = ["z", "x", "c", "v", ".", ",", "m", "n", "b"];
     
-var snipeModeConfig = 0;
+var snipeMode = 0;
 var charSpaceConfig = 3;  //1 for homekeys, 2 for homekeys + topkeys, 3 for allkeys
 var allowedMisses = 20;
+
+/* constructor functions */
+function PhraseUnit() {
+    this.xPosition = _.random(100, CANVAS_WIDTH-100);    //_.random(100, CANVAS_WIDTH-150); //setting the x position of PhraseUnit
+    this.yPosition = _.random(100, CANVAS_HEIGHT-100);    //_.random(100, ch-150); //setting the y position of PhraseUnit
+    this.phrase = phraseConstructor();
+    this.fontSize = 20;
+    this.growthSpeed = GROWTH_SPEED;
+}
     
 var userInput = $('#type-input');
 //console.log(charSpaceConfig);
@@ -50,10 +61,16 @@ $(document).ready(function() {
 var refreshResetAll = function() {
     gameStarted = false;
     hits = 0, missed = 0, GAME_LEVEL= 0;
+    PHRASE_LEN_MIN = 5;
+    PHRASE_LEN_MAX = 8;
     canvas = canvas;
     phrasesArr = [];
     $('div#model').fadeIn(1000);
     init();
+}
+
+var clearInput = function() {
+    userInput.val("");
 }
 
 function init() {
@@ -65,7 +82,7 @@ function init() {
         var allowedKeys = [1, 2, 3, 9];
         if (!gameStarted) {
             if (allowedKeys.indexOf(utv) === -1) {
-                userInput.val("");
+                clearInput();
                 $modeNums = document.querySelectorAll('.mode-nums')
                 $modeNums.forEach(function(item){
                     item.style.background = "lightgreen"
@@ -74,66 +91,21 @@ function init() {
             }
         }
 
+        if (allowedKeys.indexOf(utv) >= 0) {
+            clearInput();
+            charSpaceConfig = utv
+            if (utv === 9) charSpaceConfig = 3;
+            updateGameMode(utv)
+        } else {
+            console.warn("unsupported choice")
+            return false
+        }
+
+        startPhrases();
         gameStarted = true;
         $('div#model').fadeOut(1200);
-
-        if (userTypedValue == 1) {
-            charSpaceConfig = 1; console.log(charSpaceConfig);
-            userInput.val("");
-            updateStat('mode', '1.only home-row keys')
-            startPhrases();
-        }
-        else if (userTypedValue == 2) {
-            charSpaceConfig = 2; console.log(charSpaceConfig);
-            userInput.val("");
-            updateStat('mode', '2.home-row+top-row')
-            startPhrases();
-        }
-        else if (userTypedValue == 3) {
-            charSpaceConfig = 3; console.log(charSpaceConfig);
-            userInput.val("");
-            updateStat('mode', 'all 3 rows')
-            startPhrases();
-        }
-        else if (userTypedValue == 9) {
-            
-            if ( snipeModeConfig == 1 ) {
-                snipeModeConfig = 0;
-                charSpaceConfig = 3;
-                userInput.val("");
-                updateStat('mode', 'all 3 rows')
-                startPhrases();
-            }
-
-            else if ( snipeModeConfig == 0 ) {
-                console.log("mode set to sniper!");
-                charSpaceConfig = 3; //sets to all-keys
-                PHRASE_LEN_MIN = 1;
-                PHRASE_LEN_MAX = 2;
-
-                snipeModeConfig = 1; console.log(snipeModeConfig);
-                userInput.val("");
-                updateStat('mode', 'sniper mode')
-                startPhrases();
-            }
-
-        } else if (utv == 0) {
-            refreshResetAll()
-            userInput.val("");
-            return 0
-        } else {
-            return 0
-        }
     });    
 }
-
-// function startPhrasesSnipe() { //experimenting
-//     phrasesArr = [];
-//     for (var j = 0; j < PHRASE_LIMIT; j++) {
-//         phrasesArr.push(new PhraseUnit());
-//     }
-//     drawPhraseUnitSnipe();
-// }
 
 function startPhrases() {
     phrasesArr = [];
@@ -177,14 +149,6 @@ function matchByType() {
     });
     return GAME_LEVEL;
 };
-
-function PhraseUnit() {
-    this.xPosition = _.random(100, CANVAS_WIDTH-100);    //_.random(100, CANVAS_WIDTH-150); //setting the x position of PhraseUnit
-    this.yPosition = _.random(100, CANVAS_HEIGHT-100);    //_.random(100, ch-150); //setting the y position of PhraseUnit
-    this.phrase = phraseConstructor();
-    this.fontSize = 20;
-    this.growthSpeed = GROWTH_SPEED;
-}
         
 function phraseConstructor() {
     var gameChoices = {
@@ -227,30 +191,31 @@ function drawPhraseUnit() {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
     _.each(phrasesArr, function(pu, i) {
-        if (snipeModeConfig == 1) {
-            ctx.font = pu.fontSize+SNIPER_MODE_GROWTH_SPEED + 'px Arial';
+        if (snipeMode == 1) {
+            ctx.font = pu.fontSize+SNIPER_MODE_GROWTH_SPEED + 'px monospace';
         } else {
-            ctx.font = pu.fontSize + 'px Arial'
+            ctx.font = pu.fontSize + 'px monospace'
         }
 
         ctx.fillText(pu.phrase, pu.xPosition, pu.yPosition);
 
-        if ( (pu.fontSize > 60) && !(snipeModeConfig == 1) ) {
-            missed = missed - 1;
+        if ( (pu.fontSize > 60) || pu.fontSize < 1 ) {
+            missed = missed + 1;
             updateStat('missed', missed);
-            ctx.fillStyle = '#900';
-            phrasesArr[i] = new PhraseUnit();
-        } else if ( (pu.fontSize < 1) && (snipeModeConfig == 1) ) {
-            missed += 1;
-            updateStat('missed', + missed);
             ctx.fillStyle = '#900';
             phrasesArr[i] = new PhraseUnit();
         }
 
-        if (snipeModeConfig === 1) {
+        if (snipeMode === 1) {
             pu.fontSize = pu.fontSize - SNIPER_DECREASE_STARTING_SPEED;
         } else {
             pu.fontSize = pu.fontSize + pu.growthSpeed;
+        }
+
+        // debug coordinates
+        if (DEBUG_CONSOLE) {
+            ctx.font = '8px monospace'
+            ctx.fillText(`${pu.xPosition}, ${pu.yPosition}, ${pu.fontSize}`, pu.xPosition+50, pu.yPosition-45)
         }
     });
         
@@ -269,5 +234,29 @@ function displayGameOver() {
 }
 
 function updateStat(id, newStat) {
+    //TODO: should be refactor for readability
     $('#' + id).text(newStat + " ( "+id+" )");
 }
+
+function updateGameMode(utv){
+    var gameModes = {
+        1: 'HOMEROW',
+        2: 'HOMEROW/TOP',
+        3: 'ALLKEYS',
+        9: 'QUICK/SNIPE'
+    }
+    if (utv === 9) {
+        PHRASE_LEN_MIN = 1;
+        PHRASE_LEN_MAX = 2;
+        snipeMode = 1;
+    } else {
+        PHRASE_LEN_MIN = 5;
+        PHRASE_LEN_MAX = 8;
+        snipeMode = 0;
+    }
+    document.querySelector('#mode').innerHTML = gameModes[utv]
+}
+
+/* Debugger Console */
+
+function DebugFeatures() {}
