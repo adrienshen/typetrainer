@@ -3,12 +3,10 @@
 *    adrienshen
 */
 
-
+var DEBUG_CONSOLE = false;
 var phrasesArr = []
 var canvas = document.getElementById('app-view'),
     ctx = canvas.getContext('2d');
-
-var DEBUG_CONSOLE = true;
 
 var gameStarted = false;
 var FPS = 30;
@@ -41,16 +39,51 @@ var allowedMisses = 20;
 
 /* constructor functions */
 function PhraseUnit() {
-    this.xPosition = _.random(100, CANVAS_WIDTH-100);    //_.random(100, CANVAS_WIDTH-150); //setting the x position of PhraseUnit
-    this.yPosition = _.random(100, CANVAS_HEIGHT-100);    //_.random(100, ch-150); //setting the y position of PhraseUnit
+    this.xPosition = constructXPos()
+    this.yPosition = constructYPos()
     this.phrase = phraseConstructor();
     this.fontSize = 20;
     this.growthSpeed = GROWTH_SPEED;
 }
-    
+
+const constructXPos = () => {
+    //_.random(100, ch-150); //setting the y position of PhraseUnit
+    return _.random(100, CANVAS_WIDTH-100);
+}
+
+const constructYPos = () => {
+    //_.random(100, CANVAS_WIDTH-150); //setting the x position of PhraseUnit
+    console.log(
+        'phrasesArr : ', phrasesArr
+    )
+    for (let phrase of phrasesArr) {
+        console.log(`xpos: ${phrase.xPosition}, ypos: ${phrase.yPosition}`)
+    }
+
+    let attemptYPos = _.random(100, CANVAS_HEIGHT-100);
+
+
+    return attemptYPos;
+}
+
+const ensureNoCollision = () => {
+
+}
+
+const calculateDistance = (sub1, sub2) => {
+    return Math.sqrt(
+        Math.pow((sub2.xPosition-sub1.xPosition),2) - Math.pow((sub2.yPosition-sub1.yPosition),2))
+}
+
+const calculateMidPoint = (sub1, sub2) => {
+    return {
+        xPosition: (sub1.xPosition+sub2.xPosition)/2,
+        yPosition: (sub1.yPosition+sub2.yPosition)/2
+    }
+}
+
 var userInput = $('#type-input');
-//console.log(charSpaceConfig);
-ctx.fillStyle = '#333';
+// ctx.fillStyle = '#333';
 
 var userTypedValue;
 
@@ -97,7 +130,7 @@ function init() {
             if (utv === 9) charSpaceConfig = 3;
             updateGameMode(utv)
         } else {
-            console.warn("unsupported choice")
+            // console.warn("unsupported choice")
             return false
         }
 
@@ -216,6 +249,21 @@ function drawPhraseUnit() {
         if (DEBUG_CONSOLE) {
             ctx.font = '8px monospace'
             ctx.fillText(`${pu.xPosition}, ${pu.yPosition}, ${pu.fontSize}`, pu.xPosition+50, pu.yPosition-45)
+
+            /* Draw points on our coors */
+            ctx.beginPath()
+            ctx.arc(pu.xPosition, pu.yPosition, 2.5, 0, 2*Math.PI)
+            // ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.closePath()
+
+            /* Draw lines */
+            ctx.beginPath();
+            ctx.moveTo(pu.xPosition, pu.yPosition);
+            ctx.lineTo(100, 100);
+            ctx.strokeStyle = "#808080"
+            ctx.stroke()
+            ctx.closePath()
         }
     });
         
